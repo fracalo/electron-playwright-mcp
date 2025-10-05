@@ -13,7 +13,7 @@ This bridges the gap between:
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 20 or newer
 - A built Electron application to automate
 
 ## Installation
@@ -188,20 +188,20 @@ browser_snapshot()
 
 ```
 ┌─────────────────┐
-│  MCP Client     │  (Claude Desktop, VS Code, etc.)
+│    MCP Client   │  (Claude Desktop, VS Code, etc.)
 │  (AI Assistant) │
 └────────┬────────┘
          │ MCP Protocol (stdio)
          │
-┌────────▼────────┐
-│ electron-playwright-mcp    │
-│ Server          │
-└────────┬────────┘
+┌────────▼─────────┐
+│ electron-pwt-mcp │
+│      Server      │
+└────────┬─────────┘
          │ Playwright API
          │
 ┌────────▼────────┐
-│ Electron App    │  ◄── User can still interact manually
-│ (Your App)      │
+│   Electron App  │  ◄── User can still interact manually
+│   (Your App)    │
 └─────────────────┘
 ```
 
@@ -212,7 +212,7 @@ The server acts as a bridge, translating MCP tool calls into Playwright commands
 ### Setup
 
 ```bash
-git clone https://github.com/yourusername/electron-playwright-mcp.git
+git clone https://github.com/fracalo/electron-playwright-mcp.git
 cd electron-playwright-mcp
 npm install
 ```
@@ -289,17 +289,13 @@ Automate data entry from one application to another with AI assistance.
 - Restart Claude Desktop after configuration changes
 - Check Claude Desktop logs for error messages
 
-### Playwright errors
-- Ensure Playwright browsers are installed: `npx playwright install`
-- Check for conflicting Playwright versions in dependencies
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT
+ISC
 
 ## Related Projects
 
