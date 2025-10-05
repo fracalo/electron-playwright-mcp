@@ -1,0 +1,93 @@
+import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import {
+  CallToolRequestSchema,
+  ErrorCode,
+  ListToolsRequestSchema,
+  McpError
+} from '@modelcontextprotocol/sdk/types.js'
+import { ElectronBrowserManager } from './electron-browser-manager.js'
+import { generateToolSchemas, findTool } from './tools-registry.js'
+
+export class ElectronMCPServer {
+  private server: Server
+  private browserManager: ElectronBrowserManager
+  private appExePath: string
+
+  constructor({ appExePath }: { appExePath: string }) {
+    this.appExePath = appExePath
+    this.server = new Server(
+      {
+        name: 'electron-mcp',
+        version: '1.0.0'
+      },
+      {
+        capabilities: {
+          tools: {}
+        }
+      }
+    )
+
+    this.browserManager = new ElectronBrowserManager()
+    this.setupToolHandlers()
+  }
+
+  async initRenderer(): Promise<void> {
+    await this.browserManager.initBrowserManager(this.appExePath)
+  }
+
+  async run(): Promise<void> {
+    try {
+      console.error('🚀 Starting Electron MCP Server...')
+      const transport = new StdioServerTransport()
+      await this.server.connect(transport)
+      console.error('✅ Electron MCP Server running on stdio')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      console.error(`❌ Failed to start MCP Server: ${errorMessage}`)
+      console.error(
+        'Stack trace:',
+        error instanceof Error ? error.stack : 'No stack trace available'
+      )
+      throw error
+    }
+  }
+
+  /** @todo Check if we can control the shutdown from the Electron app */
+  async shutdown(): Promise<void> {}
+
+  private setupToolHandlers() {
+    // List available tools - generated from registry
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      return {
+        tools: generateToolSchemas()
+      }
+    })
+
+    // Handle tool calls - dispatch using registry
+    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      const { name, arguments: args } = request.params
+
+      try {
+        // Find tool in registry
+        const tool = findTool(name)
+        if (!tool) {
+          throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`)
+        }
+
+        // Validate arguments against schema
+        const validatedArgs = tool.schema.parse(args)
+
+        // Execute handler
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return tool.handler(this.browserManager, validatedArgs) as Promise<any>
+      } catch (error) {
+        if (error instanceof McpError) {
+          throw error
+        }
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        throw new McpError(ErrorCode.InternalError, `Tool execution failed: ${errorMessage}`)
+      }
+    })
+  }
+}
