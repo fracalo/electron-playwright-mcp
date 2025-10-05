@@ -20,13 +20,11 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1)
 })
 
-// Get Electron app path from CLI argument, environment variable, or default
-const defaultPath =
-  join(__dirname, '../sample-ts-electron/dist/mac-arm64/sample-ts-electron.app/Contents/MacOS/sample-ts-electron');
-const appExePath = process.argv[2] || process.env.ELECTRON_APP_PATH || defaultPath
+// Get Electron app path from CLI argument, environment variable
+const appExePath = process.argv[2] || process.env.ELECTRON_APP_PATH as string
 
 // Validate that the path exists
-if (!existsSync(appExePath)) {
+if (appExePath && !existsSync(appExePath)) {
   console.error(`❌ Electron app not found at: ${appExePath}`)
   console.error('\nUsage:')
   console.error('  node dist/index.js <path-to-electron-app>')

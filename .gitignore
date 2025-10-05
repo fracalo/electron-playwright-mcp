@@ -16,3 +16,5 @@ out
 .idea/
 .vscode/
 .editorconfig
+
+sample-ts-electron/
