@@ -84,6 +84,9 @@ test.describe('MCP Server Smoke Tests', () => {
   let client: MCPClient
 
   test.beforeAll(async () => {
+    if (!process.env.ELECTRON_APP_PATH) {
+      test.skip()
+    }
     client = new MCPClient()
     await client.startServer()
   })
@@ -201,6 +204,9 @@ test.describe('MCP Server Integration Tests', () => {
   let client: MCPClient
 
   test.beforeAll(async () => {
+    if (!process.env.ELECTRON_APP_PATH) {
+      test.skip()
+    }
     client = new MCPClient()
     await client.startServer()
   })

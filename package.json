@@ -1,6 +1,6 @@
 {
-  "name": "electron-mcp",
-  "author": "fracalo",
+  "name": "electron-playwright-mcp",
+  "author": "friki",
   "version": "1.0.0",
   "description": "MCP Server for Electron Renderer automation",
   "main": "dist/index.js",
@@ -27,6 +27,6 @@
     "typescript": "^5.9.2"
   },
   "bin": {
-    "electron-mcp-server": "./dist/index.js"
+    "electron-playwright-mcp": "./dist/index.js"
   }
 }

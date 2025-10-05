@@ -18,7 +18,7 @@ export class ElectronMCPServer {
     this.appExePath = appExePath
     this.server = new Server(
       {
-        name: 'electron-mcp',
+        name: 'electron-playwright-mcp',
         version: '1.0.0'
       },
       {

@@ -40,7 +40,7 @@ export class ElectronBrowserManager {
   private pages: Page[] = []
   private networkRequests: NetworkRequest[] = []
   private consoleMessages: ConsoleMessage[] = []
-  private screenshotDir = join(tmpdir(), 'electron-mcp')
+  private screenshotDir = join(tmpdir(), 'electron-playwright-mcp')
   private elementRefMap = new Map<string, string>()
   refCounter: number = 100
 
