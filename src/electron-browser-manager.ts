@@ -335,7 +335,7 @@ export class ElectronBrowserManager {
 
       function getSelector(el: Element): string {
         // Try to build a unique selector
-        if (el.id) return `#${el.id}`
+        if (el.id) return `#${CSS.escape(el.id)}`
 
         const tagName = el.tagName.toLowerCase()
         let selector = tagName
