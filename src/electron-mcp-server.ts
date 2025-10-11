@@ -2,12 +2,16 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
+  CallToolResult,
   ErrorCode,
   ListToolsRequestSchema,
   McpError
 } from '@modelcontextprotocol/sdk/types.js'
 import { ElectronBrowserManager } from './electron-browser-manager.js'
-import { generateToolSchemas, findTool } from './tools-registry.js'
+import { generateToolSchemas, getTool, ToolName, TOOL_REGISTRY } from './tools-registry.js'
+
+const isToolName = (value: string): value is ToolName =>
+  Object.prototype.hasOwnProperty.call(TOOL_REGISTRY, value)
 
 export class ElectronMCPServer {
   private server: Server
@@ -69,18 +73,24 @@ export class ElectronMCPServer {
       const { name, arguments: args } = request.params
 
       try {
-        // Find tool in registry
-        const tool = findTool(name)
-        if (!tool) {
+        if (!isToolName(name)) {
           throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`)
         }
 
-        // Validate arguments against schema
-        const validatedArgs = tool.schema.parse(args)
+        const tool = getTool(name)
 
-        // Execute handler
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return tool.handler(this.browserManager, validatedArgs) as Promise<any>
+        // Validate arguments against schema
+  const validatedArgs = tool.schema.parse(args ?? {})
+  const validatedArgs2 = tool.schema.parse(args)
+
+  // Execute handler and adapt response to MCP result shape
+  const result = await tool.handler(this.browserManager, validatedArgs as never)
+        return {
+          content: result.content.map((item) => ({
+            type: item.type as 'text',
+            text: item.text
+          }))
+        } satisfies CallToolResult
       } catch (error) {
         if (error instanceof McpError) {
           throw error

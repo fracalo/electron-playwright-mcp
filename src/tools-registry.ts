@@ -102,132 +102,141 @@ export interface ToolResult {
   }>
 }
 
-// Tool definition interface
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface ToolDefinition<T = any> {
+// Strongly typed tool definition
+export interface ToolDefinition<TSchema extends z.ZodSchema> {
   description: string
-  schema: z.ZodSchema<T>
-  handler: (manager: ElectronBrowserManager, args: T) => Promise<ToolResult>
+  schema: TSchema
+  handler: (manager: ElectronBrowserManager, args: z.infer<TSchema>) => Promise<ToolResult>
 }
 
-// Tool registry - single source of truth
-export const TOOL_REGISTRY: Record<string, ToolDefinition> = {
+// Helper type alias for cleaner code
+type TypedToolDefinition<TSchema extends z.ZodSchema> = ToolDefinition<TSchema>
+
+// Helper function to create typed tool definitions
+const createTool = <TSchema extends z.ZodSchema>(
+  description: string,
+  schema: TSchema,
+  handler: (manager: ElectronBrowserManager, args: z.infer<TSchema>) => Promise<ToolResult>
+): TypedToolDefinition<TSchema> => ({ description, schema, handler })
+
+// Tool registry - single source of truth with proper typing
+export const TOOL_REGISTRY = {
   // Navigation & Page Management
-  browser_navigate: {
-    description: 'Navigate to URLs or switch between Electron renderer processes',
-    schema: NavigateSchema,
-    handler: (manager, args) => manager.navigate(args)
-  },
-  browser_navigate_back: {
-    description: 'Go back to previous page in browser history',
-    schema: z.object({}),
-    handler: (manager) => manager.navigateBack()
-  },
+  browser_navigate: createTool(
+    'Navigate to URLs or switch between Electron renderer processes',
+    NavigateSchema,
+    (manager, args) => manager.navigate(args)
+  ),
+  browser_navigate_back: createTool(
+    'Go back to previous page in browser history',
+    z.object({}),
+    (manager) => manager.navigateBack()
+  ),
 
   // Page Interaction
-  browser_click: {
-    description: 'Click on elements using element description and ref ID',
-    schema: ClickSchema,
-    handler: (manager, args) => manager.click(args)
-  },
-  browser_type: {
-    description: 'Type text into editable elements',
-    schema: TypeSchema,
-    handler: (manager, args) => manager.type(args)
-  },
-  browser_press_key: {
-    description: 'Press keyboard keys',
-    schema: PressKeySchema,
-    handler: (manager, args) => manager.pressKey(args)
-  },
-  browser_fill_form: {
-    description: 'Fill multiple form fields at once',
-    schema: FillFormSchema,
-    handler: (manager, args) => manager.fillForm(args)
-  },
-  browser_select_option: {
-    description: 'Select options in dropdown menus',
-    schema: SelectOptionSchema,
-    handler: (manager, args) => manager.selectOption(args)
-  },
-  browser_hover: {
-    description: 'Hover over elements',
-    schema: HoverSchema,
-    handler: (manager, args) => manager.hover(args)
-  },
-  browser_drag: {
-    description: 'Perform drag and drop operations between elements',
-    schema: DragSchema,
-    handler: (manager, args) => manager.drag(args)
-  },
+  browser_click: createTool(
+    'Click on elements using element description and ref ID',
+    ClickSchema,
+    (manager, args) => manager.click(args)
+  ),
+  browser_type: createTool(
+    'Type text into editable elements',
+    TypeSchema,
+    (manager, args) => manager.type(args)
+  ),
+  browser_press_key: createTool(
+    'Press keyboard keys',
+    PressKeySchema,
+    (manager, args) => manager.pressKey(args)
+  ),
+  browser_fill_form: createTool(
+    'Fill multiple form fields at once',
+    FillFormSchema,
+    (manager, args) => manager.fillForm(args)
+  ),
+  browser_select_option: createTool(
+    'Select options in dropdown menus',
+    SelectOptionSchema,
+    (manager, args) => manager.selectOption(args)
+  ),
+  browser_hover: createTool(
+    'Hover over elements',
+    HoverSchema,
+    (manager, args) => manager.hover(args)
+  ),
+  browser_drag: createTool(
+    'Perform drag and drop operations between elements',
+    DragSchema,
+    (manager, args) => manager.drag(args)
+  ),
 
   // Page Analysis & Content
-  browser_snapshot: {
-    description: 'Capture accessibility snapshot of current page',
-    schema: z.object({}),
-    handler: (manager) => manager.snapshot()
-  },
-  browser_take_screenshot: {
-    description: 'Take screenshots of viewport or specific elements',
-    schema: TakeScreenshotSchema,
-    handler: (manager, args) => manager.takeScreenshot(args)
-  },
-  browser_evaluate: {
-    description: 'Execute JavaScript expressions on the page',
-    schema: EvaluateSchema,
-    handler: (manager, args) => manager.evaluate(args)
-  },
+  browser_snapshot: createTool(
+    'Capture accessibility snapshot of current page',
+    z.object({}),
+    (manager) => manager.snapshot()
+  ),
+  browser_take_screenshot: createTool(
+    'Take screenshots of viewport or specific elements',
+    TakeScreenshotSchema,
+    (manager, args) => manager.takeScreenshot(args)
+  ),
+  browser_evaluate: createTool(
+    'Execute JavaScript expressions on the page',
+    EvaluateSchema,
+    (manager, args) => manager.evaluate(args)
+  ),
 
   // File & Media Operations
-  browser_file_upload: {
-    description: 'Upload files to file input elements',
-    schema: FileUploadSchema,
-    handler: (manager, args) => manager.fileUpload(args)
-  },
+  browser_file_upload: createTool(
+    'Upload files to file input elements',
+    FileUploadSchema,
+    (manager, args) => manager.fileUpload(args)
+  ),
 
   // Tab Management
-  browser_tabs: {
-    description: 'List, create, close, or select browser tabs',
-    schema: ManageTabsSchema,
-    handler: (manager, args) => manager.manageTabs(args)
-  },
+  browser_tabs: createTool(
+    'List, create, close, or select browser tabs',
+    ManageTabsSchema,
+    (manager, args) => manager.manageTabs(args)
+  ),
 
   // Advanced Features
-  browser_handle_dialog: {
-    description: 'Handle browser dialogs (alerts, confirms, prompts)',
-    schema: HandleDialogSchema,
-    handler: (manager, args) => manager.handleDialog(args)
-  },
-  browser_wait_for: {
-    description: 'Wait for specific conditions',
-    schema: WaitForSchema,
-    handler: (manager, args) => manager.waitFor(args)
-  },
+  browser_handle_dialog: createTool(
+    'Handle browser dialogs (alerts, confirms, prompts)',
+    HandleDialogSchema,
+    (manager, args) => manager.handleDialog(args)
+  ),
+  browser_wait_for: createTool(
+    'Wait for specific conditions',
+    WaitForSchema,
+    (manager, args) => manager.waitFor(args)
+  ),
 
   // Browser Management
-  browser_resize: {
-    description: 'Resize browser window',
-    schema: ResizeSchema,
-    handler: (manager, args) => manager.resize(args)
-  },
-  browser_close: {
-    description: 'Close the browser',
-    schema: z.object({}),
-    handler: (manager) => manager.close()
-  },
+  browser_resize: createTool(
+    'Resize browser window',
+    ResizeSchema,
+    (manager, args) => manager.resize(args)
+  ),
+  browser_close: createTool(
+    'Close the browser',
+    z.object({}),
+    (manager) => manager.close()
+  ),
 
   // Network & Debugging
-  browser_network_requests: {
-    description: 'Returns all network requests since page load',
-    schema: z.object({}),
-    handler: (manager) => manager.getNetworkRequests()
-  },
-  browser_console_messages: {
-    description: 'Returns all console log messages',
-    schema: z.object({}),
-    handler: (manager) => manager.getConsoleMessages()
-  }
-}
+  browser_network_requests: createTool(
+    'Returns all network requests since page load',
+    z.object({}),
+    (manager) => manager.getNetworkRequests()
+  ),
+  browser_console_messages: createTool(
+    'Returns all console log messages',
+    z.object({}),
+    (manager) => manager.getConsoleMessages()
+  )
+} as const
 
 // Helper to generate MCP tool schemas
 export function generateToolSchemas() {
@@ -238,7 +247,10 @@ export function generateToolSchemas() {
   }))
 }
 
-// Helper to find tool by name
-export function findTool(name: string): ToolDefinition | undefined {
+// Type utilities for strongly typed tool access
+export type ToolName = keyof typeof TOOL_REGISTRY
+
+// Strongly typed tool accessor (for when you know the tool name at compile time)
+export function getTool<T extends ToolName>(name: T): typeof TOOL_REGISTRY[T] {
   return TOOL_REGISTRY[name]
 }
