@@ -20,6 +20,4 @@ jobs:
 
             - run: npm ci
             - run: npm run build --if-present
-            - run: npm ping --registry https://registry.npmjs.org/
-            - run: npm whoami
             - run: npm publish --provenance --access public
