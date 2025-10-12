@@ -1,7 +1,7 @@
 {
   "name": "electron-playwright-mcp",
   "author": "Francesco Calo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP Server for Electron Renderer automation",
   "main": "dist/index.js",
   "type": "module",
